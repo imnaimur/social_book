@@ -15,6 +15,24 @@ def index(request):
     posts = Post.objects.all()
     return render(request,'index.html',{'image':image,'posts':posts})
 
+def settings(request):
+    user_profile = Profile.objects.get(user = request.user)
+    if request.method == 'POST':
+        if request.FILES.get('image') == None:
+            image = user_profile.profileimg
+        else:
+            image = request.FILES.get('image')
+        
+        bio = request.POST['bio']
+        location = request.POST['location']
+
+        user_profile.profileimg = image
+        user_profile.bio = bio
+        user_profile.location = location
+        user_profile.save()
+        return redirect('settings')
+
+    return render(request,'setting.html',{'user_profile':user_profile})
 
 def signup(request):
     if request.method == 'POST':
@@ -40,7 +58,7 @@ def signup(request):
                 user_model = User.objects.get(username=username)
                 new_profile = Profile.objects.create(user=user_model, id_user=user_model.id)
                 new_profile.save()
-                return redirect('signup')
+                return redirect('settings')
         else:
             messages.info(request,'Password not matching')
             return redirect('signup')
@@ -61,39 +79,22 @@ def signin(request):
             return redirect('/')
         else:
             messages.info(request, 'Credential Invalid')
-            return redirect('signin')
+            return redirect('/')
 
         
         
     else:
         return render(request,'signin.html')
     
-@login_required(login_url='signin')
+# @login_required(login_url='signin')
 def Logout(request):
 
     auth.logout(request)
     return redirect('signin')
 
 
-@login_required(login_url='signin')
-def settings(request):
-    user_profile = Profile.objects.get(user = request.user)
-    if request.method == 'POST':
-        if request.FILES.get('image') == None:
-            image = user_profile.profileimg
-        else:
-            image = request.FILES.get('image')
-        
-        bio = request.POST['bio']
-        location = request.POST['location']
+# @login_required(login_url='signin')
 
-        user_profile.profileimg = image
-        user_profile.bio = bio
-        user_profile.location = location
-        user_profile.save()
-        return redirect('settings')
-
-    return render(request,'setting.html',{'user_profile':user_profile})
 
 # @login_required(login_url='signin')
 def upload(request):
